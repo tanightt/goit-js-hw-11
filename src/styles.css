@@ -4,7 +4,7 @@ body {
 
 img {
     display: block;
-    max-width: 100%;
+    width: 100%;
     height: auto;
 }
 
@@ -38,7 +38,6 @@ input {
 }
 
 .photo-card img {
-    width: 360px;
     height: 200px;
     object-fit: cover;
 }
@@ -60,9 +59,8 @@ input {
 }
 
 .load-more {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+    display: none;
+    margin: 10px auto 20px;
     padding: 7px 15px;
     border-color: inherit;
     border-radius: 2px;

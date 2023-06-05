@@ -7,14 +7,38 @@ const searchBtn = document.querySelector('[type="submit"]');
 const gallery = document.querySelector('.gallery');
 const loadMoreBtn = document.querySelector('.load-more');
 
+let cardPage = null;
+let totalHits = null;
+
 function onBtnSearch(e) {
     e.preventDefault();
-    
+    cardPage = 1;
     getCard().then(cardData => {
         gallery.innerHTML = createGalleryCards(cardData);
+
+        Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`)
+        loadMoreBtn.style.display = 'block';
+
+        if (totalHits <= 40) {
+            Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
+            loadMoreBtn.style.display = 'none';
+        }
     });
 } 
 searchBtn.addEventListener('click', onBtnSearch);
+
+function onLoadMoreCards(e) {
+    cardPage += 1;
+
+    getCard().then(cardData => {
+        gallery.insertAdjacentHTML('beforeend', createGalleryCards(cardData));
+        if (cardPage === Math.ceil(totalHits / 40)) {
+            Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
+            loadMoreBtn.style.display = 'none';
+        }
+    });
+}
+loadMoreBtn.addEventListener('click', onLoadMoreCards);
 
 async function getCard() {
   try {
@@ -25,15 +49,15 @@ async function getCard() {
         image_type: 'photo',
         orientation: 'horizontal',
         safesearch: 'true',
+        page: `${cardPage}`,
+        per_page: 40,
     }
     });
-      
     const cardData = response.data.hits; 
+    totalHits = response.data.totalHits;
     if (cardData.length === 0) {
         return Notiflix.Notify.failure("Sorry, there are no images matching your search query. Please try again.")
-    }
-    Notiflix.Notify.success(`Hooray! We found ${response.data.totalHits} images.`)
-      
+    }      
     return cardData;
   } catch (error) {
     console.error(error);
