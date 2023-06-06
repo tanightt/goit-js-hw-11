@@ -15,6 +15,9 @@ const lightbox = new SimpleLightbox('.gallery a');
 
 function onBtnSearch(e) {
     e.preventDefault();
+    if (input.value.trim() === '') {
+        return;
+    }
     cardPage = 1;
     getCard().then(cardData => {
         
