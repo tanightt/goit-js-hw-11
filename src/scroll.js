@@ -11,13 +11,19 @@ const observEl = document.querySelector('.js-observEl');
 
 let cardPage = null;
 let totalHits = null;
+let searchValue = null;
 const lightbox = new SimpleLightbox('.gallery a');
 
 const observerGallery = new IntersectionObserver((entries, observer) => {
     if (entries[0].isIntersecting) {
         cardPage += 1;
 
-    getCard().then(cardData => {
+        getCard().then(cardData => {
+         if (totalHits >= 1 && totalHits <= 40) {
+            Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
+            observer.unobserve(observEl);
+            return;
+        }
         gallery.insertAdjacentHTML('beforeend', createGalleryCards(cardData));
         lightbox.refresh(); 
 
@@ -36,14 +42,25 @@ const observerGallery = new IntersectionObserver((entries, observer) => {
 
 function onBtnSearch(e) {
     e.preventDefault();
+    if (input.value.trim() === '') {
+        return;
+    }
     cardPage = 1;
+    searchValue = input.value;
     getCard().then(cardData => {
-        setTimeout(() => {
+        if (cardData) {
+           setTimeout(() => {
           observerGallery.observe(observEl);
-        }, 1000);
-
+        }, 1000); 
+        }
+        
         gallery.innerHTML = createGalleryCards(cardData);
-        lightbox.refresh(); 
+        lightbox.refresh();
+        
+        window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+        });
 
         Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`)
     });
@@ -55,7 +72,7 @@ async function getCard() {
     const response = await axios.get('https://pixabay.com/api/', {
     params: {
         key: '37045693-8aefe551e2e8551a000bf542b',
-        q: `${input.value}`,
+        q: `${searchValue}`,
         image_type: 'photo',
         orientation: 'horizontal',
         safesearch: 'true',
@@ -65,7 +82,7 @@ async function getCard() {
     });
     const cardData = response.data.hits; 
     totalHits = response.data.totalHits;
-    if (cardData.length === 0) {
+    if (totalHits === 0) {
         return Notiflix.Notify.failure("Sorry, there are no images matching your search query. Please try again.")
     }      
     return cardData;

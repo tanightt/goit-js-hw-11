@@ -11,6 +11,7 @@ const loadMoreBtn = document.querySelector('.load-more');
 
 let cardPage = null;
 let totalHits = null;
+let searchValue = null;
 const lightbox = new SimpleLightbox('.gallery a');
 
 function onBtnSearch(e) {
@@ -19,10 +20,20 @@ function onBtnSearch(e) {
         return;
     }
     cardPage = 1;
+    searchValue = input.value;
     getCard().then(cardData => {
+        if (!cardData) {
+            gallery.innerHTML = '';
+            loadMoreBtn.style.display = 'none';
+        }
         
         gallery.innerHTML = createGalleryCards(cardData);
         lightbox.refresh(); 
+
+        window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+        });
 
         Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`)
         loadMoreBtn.style.display = 'block';
@@ -61,7 +72,7 @@ async function getCard() {
     const response = await axios.get('https://pixabay.com/api/', {
     params: {
         key: '37045693-8aefe551e2e8551a000bf542b',
-        q: `${input.value}`,
+        q: `${searchValue}`,
         image_type: 'photo',
         orientation: 'horizontal',
         safesearch: 'true',
