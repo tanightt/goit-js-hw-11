@@ -1,5 +1,7 @@
 import axios from 'axios';
 import Notiflix from 'notiflix';
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
 import { createGalleryCards } from "./gallery-card.js";
 
 const input = document.querySelector('[name="searchQuery"]');
@@ -9,12 +11,15 @@ const loadMoreBtn = document.querySelector('.load-more');
 
 let cardPage = null;
 let totalHits = null;
+const lightbox = new SimpleLightbox('.gallery a');
 
 function onBtnSearch(e) {
     e.preventDefault();
     cardPage = 1;
     getCard().then(cardData => {
+        
         gallery.innerHTML = createGalleryCards(cardData);
+        lightbox.refresh(); 
 
         Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`)
         loadMoreBtn.style.display = 'block';
@@ -32,6 +37,14 @@ function onLoadMoreCards(e) {
 
     getCard().then(cardData => {
         gallery.insertAdjacentHTML('beforeend', createGalleryCards(cardData));
+        lightbox.refresh(); 
+
+        const { height: cardHeight } = gallery.firstElementChild.getBoundingClientRect();
+        window.scrollBy({
+        top: cardHeight * 2,
+        behavior: "smooth",
+        });
+        
         if (cardPage === Math.ceil(totalHits / 40)) {
             Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
             loadMoreBtn.style.display = 'none';

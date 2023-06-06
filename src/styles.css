@@ -20,6 +20,9 @@ input {
 }
 
 .search-form {
+    position: fixed;
+    top: 0;
+    width: 100%;
     padding: 10px 0;
     display: flex;
     justify-content: center;
@@ -27,6 +30,7 @@ input {
 }
 
 .gallery {
+    margin-top: 50px;
     padding: 15px;
     display: flex;
     flex-wrap: wrap;
