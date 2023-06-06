@@ -7,51 +7,48 @@ import { createGalleryCards } from "./gallery-card.js";
 const input = document.querySelector('[name="searchQuery"]');
 const searchBtn = document.querySelector('[type="submit"]');
 const gallery = document.querySelector('.gallery');
-const loadMoreBtn = document.querySelector('.load-more');
+const observEl = document.querySelector('.js-observEl');
 
 let cardPage = null;
 let totalHits = null;
 const lightbox = new SimpleLightbox('.gallery a');
 
-function onBtnSearch(e) {
-    e.preventDefault();
-    cardPage = 1;
-    getCard().then(cardData => {
-        
-        gallery.innerHTML = createGalleryCards(cardData);
-        lightbox.refresh(); 
-
-        Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`)
-        loadMoreBtn.style.display = 'block';
-
-        if (totalHits <= 40) {
-            Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
-            loadMoreBtn.style.display = 'none';
-        }
-    });
-} 
-searchBtn.addEventListener('click', onBtnSearch);
-
-function onLoadMoreCards(e) {
-    cardPage += 1;
+const observerGallery = new IntersectionObserver((entries, observer) => {
+    if (entries[0].isIntersecting) {
+        cardPage += 1;
 
     getCard().then(cardData => {
         gallery.insertAdjacentHTML('beforeend', createGalleryCards(cardData));
         lightbox.refresh(); 
 
-        const { height: cardHeight } = gallery.firstElementChild.getBoundingClientRect();
-        window.scrollBy({
-        top: cardHeight * 2,
-        behavior: "smooth",
-        });
-
         if (cardPage === Math.ceil(totalHits / 40)) {
             Notiflix.Notify.info("We're sorry, but you've reached the end of search results.");
-            loadMoreBtn.style.display = 'none';
+            observer.unobserve(observEl);
         }
     });
+    }
+}, {
+    root: null,
+    rootMargin: '0px 0px 400px 0px',
+    threshold: 1.0
 }
-loadMoreBtn.addEventListener('click', onLoadMoreCards);
+);
+
+function onBtnSearch(e) {
+    e.preventDefault();
+    cardPage = 1;
+    getCard().then(cardData => {
+        setTimeout(() => {
+          observerGallery.observe(observEl);
+        }, 1000);
+
+        gallery.innerHTML = createGalleryCards(cardData);
+        lightbox.refresh(); 
+
+        Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`)
+    });
+} 
+searchBtn.addEventListener('click', onBtnSearch);
 
 async function getCard() {
   try {
